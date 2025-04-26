@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Target Sheet Generator</title>
+<link rel="icon" href="https://i.ibb.co/W48rv8hd/icon.png" type="image/png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #98cc4e;
+            --secondary: #fb0088;
+            --light: #FFFFFF;
+            --dark: #292929;
+            --bg: #F7F7F7;
+            --border: #e0e0e0;
+            --pink: #ffd6e7;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        .header h1 {
+            color: var(--primary);
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1rem;
+        }
+
+        .spreadsheet-container {
+            background: var(--light);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            width: 100%;
+            max-width: 1200px;
+            border: 1px solid rgba(0,0,0,0.05);
+            overflow-x: auto;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.7rem 1.2rem;
+            border-radius: 6px;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            position: relative;
+        }
+
+        .btn-primary:hover {
+            background: var(--secondary);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: var(--dark);
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 1rem;
+            table-layout: fixed;
+            font-size: 0.85rem;
+        }
+
+        th, td {
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            text-align: left;
+            min-width: 100px;
+            word-wrap: break-word;
+        }
+
+        th {
+            background-color: rgba(152,204,78,0.1);
+            position: sticky;
+            top: 0;
+        }
+
+        td {
+            background-color: white;
+        }
+
+        .output-container {
+            position: relative;
+            margin-top: 2rem;
+            border-top: 1px solid var(--border);
+            padding-top: 1.5rem;
+        }
+
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        select, input {
+            padding: 0.7rem;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .target-input-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .target-input {
+            position: relative;
+        }
+
+        .target-input input {
+            padding-right: 40px;
+        }
+
+        .edit-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: #666;
+        }
+
+        .edit-icon:hover {
+            color: var(--secondary);
+        }
+
+        .copy-tick {
+            position: absolute;
+            right: 0px;
+            top: 0px;
+            background-color: rgba(0,0,0,0.5);
+            border-radius: 100%;
+            padding: 4px;
+            color: white;
+            display: none;
+        }
+
+        footer {
+            margin-top: 3rem;
+            text-align: center;
+            color: #888;
+            font-size: 0.9rem;
+            width: 100%;
+            max-width: 1200px;
+        }
+
+        @media (max-width: 768px) {
+            .toolbar {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><i class="fas fa-bullseye"></i> Monthly Target Sheet Generator</h1>
+        <p>Generate daily target sheets for your 26th-25th monthly cycle</p>
+    </div>
+
+    <div class="spreadsheet-container">
+        <div class="form-group">
+            <label for="monthSelect">Select Target Month:</label>
+            <select id="monthSelect" class="form-control">
+                <!-- Months will be populated by JavaScript -->
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="yearSelect">Select Year:</label>
+            <select id="yearSelect" class="form-control">
+                <!-- Years will be populated by JavaScript -->
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Monthly Target:</label>
+            <div class="target-input-container">
+                <div class="target-input">
+                    <input type="number" id="targetInput" value="465000" readonly>
+                    <i class="fas fa-pencil-alt edit-icon" id="editTarget"></i>
+                </div>
+                <button class="btn btn-primary" id="generateBtn">
+                    <i class="fas fa-calculator"></i> Generate Sheet
+                </button>
+            </div>
+        </div>
+
+        <div class="output-container">
+            <div class="output-header">
+                <h3>Daily Target Sheet</h3>
+                <button class="btn btn-primary" id="copyBtn">
+                    <i class="fas fa-copy"></i> Copy Table
+                    <span class="copy-tick"><i class="fas fa-check"></i></span>
+                </button>
+            </div>
+            <table id="targetTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Date</th>
+                        <th>Cumulative Target</th>
+                        <th>Percentage</th>
+                        <th>Achieved</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td colspan="5" style="text-align: center;">Select month and click "Generate Sheet"</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <footer>
+        © Target Sheet Generator | Data is generated in your browser only (not saved to server)
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize month and year dropdowns
+            initializeDateSelectors();
+            
+            // Load saved target from localStorage if available
+            const savedTarget = localStorage.getItem('monthlyTarget');
+            if (savedTarget) {
+                document.getElementById('targetInput').value = savedTarget;
+            }
+
+            // Set up edit target functionality
+            const targetInput = document.getElementById('targetInput');
+            const editIcon = document.getElementById('editTarget');
+            
+            editIcon.addEventListener('click', function() {
+                if (targetInput.readOnly) {
+                    if (confirm('Are you sure you want to change the target value?')) {
+                        targetInput.readOnly = false;
+                        targetInput.focus();
+                        editIcon.classList.replace('fa-pencil-alt', 'fa-save');
+                    }
+                } else {
+                    targetInput.readOnly = true;
+                    editIcon.classList.replace('fa-save', 'fa-pencil-alt');
+                    localStorage.setItem('monthlyTarget', targetInput.value);
+                }
+            });
+
+            // Generate sheet when button is clicked
+            document.getElementById('generateBtn').addEventListener('click', generateTargetSheet);
+            
+            // Copy table when button is clicked
+            document.getElementById('copyBtn').addEventListener('click', copyTableToClipboard);
+            
+            // Generate sheet automatically on page load if month/year are valid
+            generateTargetSheet();
+        });
+
+        function initializeDateSelectors() {
+            const monthSelect = document.getElementById('monthSelect');
+            const yearSelect = document.getElementById('yearSelect');
+            
+            // Populate months
+            const monthNames = ["January", "February", "March", "April", "May", "June", 
+                               "July", "August", "September", "October", "November", "December"];
+            
+            monthSelect.innerHTML = '';
+            monthNames.forEach((month, index) => {
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = month;
+                monthSelect.appendChild(option);
+            });
+            
+            // Populate years (current year to 2036)
+            yearSelect.innerHTML = '';
+            const currentYear = new Date().getFullYear();
+            for (let year = currentYear; year <= 2036; year++) {
+                const option = document.createElement('option');
+                option.value = year;
+                option.textContent = year;
+                yearSelect.appendChild(option);
+            }
+            
+            // Set default selections based on current date
+            const today = new Date();
+            const currentDay = today.getDate();
+            let defaultMonth = today.getMonth();
+            let defaultYear = today.getFullYear();
+            
+            // If today is 26th or later, use next month
+            if (currentDay >= 26) {
+                defaultMonth++;
+                if (defaultMonth > 11) {
+                    defaultMonth = 0;
+                    defaultYear++;
+                }
+            }
+            
+            monthSelect.value = defaultMonth;
+            yearSelect.value = defaultYear;
+        }
+
+        function generateTargetSheet() {
+            const monthSelect = document.getElementById('monthSelect');
+            const yearSelect = document.getElementById('yearSelect');
+            const targetInput = document.getElementById('targetInput');
+            
+            const month = parseInt(monthSelect.value);
+            const year = parseInt(yearSelect.value);
+            const totalTarget = parseFloat(targetInput.value) || 465000;
+            
+            // Calculate date range (26th of selected month to 25th of next month)
+            const startDate = new Date(year, month, 26);
+            const endDate = new Date(year, month + 1, 25);
+            
+            // Calculate number of days
+            const daysDiff = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1;
+            
+            // Calculate daily target increment
+            const dailyIncrement = totalTarget / daysDiff;
+            
+            // Generate table rows
+            const tableBody = document.querySelector('#targetTable tbody');
+            tableBody.innerHTML = '';
+            
+            let currentDate = new Date(startDate);
+            let cumulativeTotal = 0;
+            let dayCount = 1;
+            
+            while (currentDate <= endDate) {
+                cumulativeTotal += dailyIncrement;
+                const percentage = (cumulativeTotal / totalTarget * 100).toFixed(2);
+                
+                const row = document.createElement('tr');
+                
+                // Add day number
+                const dayCell = document.createElement('td');
+                dayCell.textContent = dayCount++;
+                row.appendChild(dayCell);
+                
+                // Add date
+                const dateCell = document.createElement('td');
+                dateCell.textContent = formatDate(currentDate);
+                row.appendChild(dateCell);
+                
+                // Add cumulative target
+                const targetCell = document.createElement('td');
+                targetCell.textContent = cumulativeTotal.toFixed(2);
+                row.appendChild(targetCell);
+                
+                // Add percentage column
+                const percentageCell = document.createElement('td');
+                percentageCell.textContent = percentage + '%';
+                row.appendChild(percentageCell);
+                
+                // Add achieved column (empty)
+                const achievedCell = document.createElement('td');
+                achievedCell.innerHTML = '&nbsp;';
+                row.appendChild(achievedCell);
+                
+                tableBody.appendChild(row);
+                
+                // Move to next day
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+        }
+
+        function formatDate(date) {
+            const day = date.getDate();
+            const month = date.getMonth() + 1;
+            const year = date.getFullYear();
+            
+            // Pad with leading zeros if needed
+            const formattedDay = day < 10 ? `0${day}` : day;
+            const formattedMonth = month < 10 ? `0${month}` : month;
+            
+            return `${formattedDay}-${formattedMonth}-${year}`;
+        }
+
+        function copyTableToClipboard() {
+            const table = document.getElementById('targetTable');
+            let text = '';
+            
+            // Add headers
+            const headers = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent);
+            text += headers.join('\t') + '\n';
+            
+            // Add rows
+            table.querySelectorAll('tbody tr').forEach(row => {
+                const cells = Array.from(row.querySelectorAll('td')).map(td => {
+                    // Replace &nbsp; with empty string
+                    return td.textContent.trim() === '' ? '' : td.textContent;
+                });
+                text += cells.join('\t') + '\n';
+            });
+
+            if (!text.trim()) {
+                alert('No data to copy. Please generate a sheet first.');
+                return;
+            }
+
+            navigator.clipboard.writeText(text).then(() => {
+                const tick = document.querySelector('.copy-tick');
+                tick.style.display = 'inline-block';
+                setTimeout(() => {
+                    tick.style.display = 'none';
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy:', err);
+                alert('Failed to copy table. Please try again.');
+            });
+        }
+    </script>
+</body>
+</html>
